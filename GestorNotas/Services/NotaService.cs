@@ -35,5 +35,6 @@ namespace GestorNotas.Services
         {
             return _connection.Delete(Nota);
         }
+        //quede en el minuto 45:22 del 04062025
     }
 }
