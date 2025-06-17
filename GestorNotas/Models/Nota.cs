@@ -6,7 +6,7 @@ namespace GestorNotas.Models
     public class Nota
     {
         [PrimaryKey, AutoIncrement]
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         [NotNull]
         public string? Titulo { get; set; }

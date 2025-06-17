@@ -1,4 +1,6 @@
-﻿namespace GestorNotas
+﻿using GestorNotas.Views;
+
+namespace GestorNotas
 {
     public partial class App : Application
     {
@@ -6,7 +8,7 @@
         {
             InitializeComponent();
 
-            MainPage = new AppShell();
+            MainPage = new MainView();
         }
     }
 }

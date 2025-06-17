@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
-namespace GestorNotas.ViewModels
+using CommunityToolkit.Mvvm.ComponentModel;
+
+public partial class NotaViewModel : ObservableObject
 {
-    class MainViewModel
-    {
-    }
+    
 }
