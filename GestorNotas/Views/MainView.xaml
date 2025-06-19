@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GestorNotas.Views.MainView"
              xmlns:ViewModel="clr-namespace:GestorNotas.ViewModels"
-             x:DataType="ViewModel:MainViewModel"
+             x:DataType="ViewModel:AddEditViewModel"
              Title="MainView">
     <VerticalStackLayout Padding="10" Spacing="20">
         <Label Text="NOTAS" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="30"/>
