@@ -5,8 +5,36 @@
              xmlns:ViewModel="clr-namespace:GestorNotas.ViewModels"
              x:DataType="ViewModel:AddEditViewModel"
              Title="MainView">
-    <VerticalStackLayout Padding="10" Spacing="20">
-        <Label Text="NOTAS" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="30"/>
-        
+    <VerticalStackLayout Padding="10" Spacing="15">
+
+        <Entry Placeholder="Buscar nota..."
+           Text="" />
+
+        <Button Text="Agregar Nota"
+            Command="" />
+
+        <CollectionView ItemsSource="">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="5" BorderColor="Gray" Padding="10">
+                        <VerticalStackLayout>
+                            <Entry Text="" FontAttributes="Bold" />
+                            <Editor Text="" HeightRequest="100" />
+
+                            <HorizontalStackLayout Spacing="10">
+                                <Button Text="Compartir"
+                                    Command=""
+                                    CommandParameter="" />
+
+                                <Button Text="Eliminar"
+                                    BackgroundColor="Red" TextColor="White"
+                                    Command=""
+                                    CommandParameter="" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </VerticalStackLayout>
 </ContentPage>
