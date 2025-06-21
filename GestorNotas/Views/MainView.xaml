@@ -26,6 +26,11 @@
                                     Command=""
                                     CommandParameter="" />
 
+                                <Button Text="Editar"
+                                    BackgroundColor="Yellow" TextColor="White"
+                                    Command=""
+                                    CommandParameter="" />
+
                                 <Button Text="Eliminar"
                                     BackgroundColor="Red" TextColor="White"
                                     Command=""
