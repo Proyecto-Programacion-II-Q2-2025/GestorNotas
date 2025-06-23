@@ -1,6 +1,8 @@
 ﻿
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using GestorNotas.Models;
 using GestorNotas.Services;
 using System.Collections.ObjectModel;
