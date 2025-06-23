@@ -1,40 +1,44 @@
-﻿
-
-using GestorNotas.Models;
+﻿using GestorNotas.Models;
 using SQLite;
 
 namespace GestorNotas.Services
 {
-    class NotaService
+    public class NotaService
     {
-        private readonly SQLiteConnection _connection;
+        private SQLiteAsyncConnection _db;
 
-        public NotaService()
+        public async Task Init()
         {
-            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Notas.db3");
-            _connection = new SQLiteConnection(dbPath);
-            _connection.CreateTable<Nota>();
+            if (_db != null)
+                return;
+
+            var ruta = Path.Combine(FileSystem.AppDataDirectory, "notas.db");
+            _db = new SQLiteAsyncConnection(ruta);
+            await _db.CreateTableAsync<Nota>();
         }
 
-        public List<Nota> GetAll()
+        public async Task<List<Nota>> ObtenerNotas()
         {
-            return _connection.Table<Nota>().ToList();
+            await Init();
+            return await _db.Table<Nota>().ToListAsync();
         }
 
-        public int Insert(Nota Nota)
+        public async Task AgregarNota(Nota nota)
         {
-            return _connection.Insert(Nota);
+            await Init();
+            await _db.InsertAsync(nota);
         }
 
-        public int Update(Nota Nota)
+        public async Task EliminarNota(Nota nota)
         {
-            return _connection.Update(Nota);
+            await Init();
+            await _db.DeleteAsync(nota);
         }
 
-        public int Delete(Nota Nota)
+        public async Task ActualizarNota(Nota nota)
         {
-            return _connection.Delete(Nota);
+            await Init();
+            await _db.UpdateAsync(nota);
         }
-        //quede en el minuto 45:22 del 04062025
     }
 }
