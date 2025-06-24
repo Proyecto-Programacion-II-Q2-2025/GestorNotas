@@ -1,44 +1,48 @@
-﻿using GestorNotas.Models;
+﻿
+
+
+using GestorNotas.Models;
 using SQLite;
 
 namespace GestorNotas.Services
 {
-    public class NotaService
+    public class NotasServices
     {
-        private SQLiteAsyncConnection _db;
+        private readonly SQLiteConnection _connection;
 
-        public async Task Init()
+        public NotasServices()
         {
-            if (_db != null)
-                return;
+            // Path to storage database
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Notas.db3");
+            // Initialize connection and create database
+            _connection = new SQLiteConnection(dbPath);
+            // Create table
+            _connection.CreateTable<Notas>();
 
-            var ruta = Path.Combine(FileSystem.AppDataDirectory, "notas.db");
-            _db = new SQLiteAsyncConnection(ruta);
-            await _db.CreateTableAsync<Nota>();
         }
 
-        public async Task<List<Nota>> ObtenerNotas()
+        public List<Notas> GetAll()
         {
-            await Init();
-            return await _db.Table<Nota>().ToListAsync();
+            // It's equal to SELECT * FROM Empleado
+            return _connection.Table<Notas>().ToList();
         }
 
-        public async Task AgregarNota(Nota nota)
+        public int Insert(Notas notas)
         {
-            await Init();
-            await _db.InsertAsync(nota);
+            // It's equal to INSERT Empleado VALUES(....
+            return _connection.Insert(notas);
         }
 
-        public async Task EliminarNota(Nota nota)
+        public int Update(Notas notas)
         {
-            await Init();
-            await _db.DeleteAsync(nota);
+            // It's equal to UPDATE Empleado set xxxxx=xxx WHERE id = xxx
+            return _connection.Update(notas);
         }
 
-        public async Task ActualizarNota(Nota nota)
+        public int Delete(Notas notas)
         {
-            await Init();
-            await _db.UpdateAsync(nota);
+            // It's equal to DELETE FROM Empleado WHERE id = xxx
+            return _connection.Delete(notas);
         }
     }
 }

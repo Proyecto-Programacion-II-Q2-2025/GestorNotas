@@ -3,89 +3,165 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using GestorNotas.Messages;
 using GestorNotas.Models;
 using GestorNotas.Services;
+using GestorNotas.Views;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
-using System.Linq;
 
-public partial class NotaViewModel : ObservableObject
+
+namespace GestorNotas.ViewModels
 {
-    public ObservableCollection<Nota> ListaNotas { get; set; } = new();
-    private NotaService notaService = new();
-
-    private string textoBusqueda;
-    public string TextoBusqueda
+    public partial class MainViewModel : ObservableObject
     {
-        get => textoBusqueda;
-        set
+        private ObservableCollection<Notas> _allNotas = new ObservableCollection<Notas>();
+
+        [ObservableProperty]
+        private ObservableCollection<Notas> notasCollection = new ObservableCollection<Notas>();
+
+        [ObservableProperty]
+        private string searchText = string.Empty;
+
+        partial void OnSearchTextChanged(string value)
         {
-            textoBusqueda = value;
-            OnPropertyChanged();
-            BuscarNotas();
+            FilterNotas(value);
         }
-    }
 
-    public ICommand CompartirCommand { get; }
-    public ICommand EliminarCommand { get; }
-    public ICommand AgregarCommand { get; }
+        private readonly NotasServices _service;
 
-    public MainViewModel()
-    {
-        CompartirCommand = new Command<Nota>(CompartirNota);
-        EliminarCommand = new Command<Nota>(EliminarNota);
-        AgregarCommand = new Command(AgregarNota);
-        BuscarCommand = new Command(async () => await BuscarNotas());
-
-        _ = CargarNotas();
-    }
-
-    private void CargarNotas()
-    {
-        ListaNotas.Clear();
-        var notas = notaService.ObtenerNotas();
-        foreach (var nota in notas)
-            ListaNotas.Add(nota);
-    }
-
-    private async Task BuscarNotas()
-    {
-        ListaNotas.Clear();
-        var notas = await notaService.ObtenerNotas();
-
-        var filtradas = string.IsNullOrWhiteSpace(TextoBusqueda)
-            ? notas
-            : notas.Where(n =>
-                (n.Titulo?.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (n.Contenido?.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false));
-
-        foreach (var nota in filtradas)
-            ListaNotas.Add(nota);
-    }
-
-
-    private async void CompartirNota(Nota nota)
-    {
-        if (nota is not null)
+        public MainViewModel()
         {
-            await Share.RequestAsync(new ShareTextRequest
+            _service = new NotasServices();
+            LoadAllNotas();
+
+            WeakReferenceMessenger.Default.Register<NoteSavedMessage>(this, (recipient, message) =>
             {
-                Title = nota.Titulo ?? "Nota",
-                Text = nota.Contenido ?? ""
+                if (message.Value)
+                {
+                    LoadAllNotas();
+                }
             });
+                    
+        }
+
+
+        private void Alerta(string titulo, string mensaje)
+        {
+            MainThread.BeginInvokeOnMainThread(async () => await App.Current!.MainPage!.DisplayAlert(titulo, mensaje, "Aceptar"));
+        }
+
+        public void LoadAllNotas()
+        {
+            var notesFromDb = _service.GetAll();
+
+            _allNotas.Clear();
+            foreach (var nota in notesFromDb)
+            {
+                _allNotas.Add(nota);
+            }
+
+            FilterNotas(SearchText);
+        }
+
+        private void FilterNotas(string query)
+        {
+            notasCollection.Clear();
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                foreach (var nota in _allNotas)
+                {
+                    notasCollection.Add(nota);
+                }
+            }
+            else
+            {
+                string lowerCaseQuery = query.ToLowerInvariant();
+
+                var filtered = _allNotas.Where(nota =>
+                    (nota.Titulo?.ToLowerInvariant().Contains(lowerCaseQuery) ?? false) ||
+                    (nota.Contenido?.ToLowerInvariant().Contains(lowerCaseQuery) ?? false)
+                );
+
+                foreach (var nota in filtered)
+                {
+                    notasCollection.Add(nota);
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task GoToAddEditView()
+        {
+            await App.Current!.MainPage!.Navigation.PushAsync(new AddEditViews());
+        }
+
+        [RelayCommand]
+        private async Task SelectNotas(Notas notas)
+        {
+            if (notas == null) return;
+
+            try
+            {
+                const string ACTUALIZAR = "Actualizar";
+                const string ELIMINAR = "Eliminar";
+                const string COMPARTIR = "Compartir";
+
+                string res = await App.Current!.MainPage!.DisplayActionSheet("OPCIONES", "Cancelar", null, ACTUALIZAR, ELIMINAR, COMPARTIR);
+
+                if (res == ACTUALIZAR)
+                {
+                    await App.Current!.MainPage!.Navigation.PushAsync(new AddEditViews(notas));
+                }
+                else if (res == ELIMINAR)
+                {
+                    bool respuesta = await App.Current!.MainPage!.DisplayAlert("ELIMINAR NOTA", "¿Desea eliminar la nota?", "Si", "No");
+
+                    if (respuesta)
+                    {
+                        int del = _service.Delete(notas);
+
+                        if (del > 0)
+                        {
+                            Alerta("ELIMINAR NOTA", "Nota eliminada correctamente");
+                            LoadAllNotas();
+                        }
+                        else
+                        {
+                            Alerta("ELIMINAR NOTA", "No se eliminó la nota");
+                        }
+                    }
+                }
+                else if (res == COMPARTIR)
+                {
+                    await ShareNote(notas);
+                }
+            }
+            catch (Exception ex)
+            {
+                Alerta("ERROR", $"Ocurrió un error: {ex.Message}");
+            }
+        }
+
+        private async Task ShareNote(Notas notaToShare)
+        {
+            if (notaToShare == null) return;
+
+            try
+            {
+                string shareText = $"*Título:* {notaToShare.Titulo}\n\n*Contenido:*\n{notaToShare.Contenido}";
+
+                await Share.RequestAsync(new ShareTextRequest
+                {
+                    Text = shareText,
+                    Title = "Compartir Nota",
+                    Subject = $"Nota de GestorNotas: {notaToShare.Titulo}"
+                });
+            }
+            catch (Exception ex)
+            {
+                Alerta("Error al Compartir", $"No se pudo compartir la nota: {ex.Message}");
+            }
         }
     }
-
-    private void EliminarNota(Nota nota)
-    {
-        if (nota is not null && ListaNotas.Contains(nota))
-            ListaNotas.Remove(nota);
-    }
-
-    private void AgregarNota()
-    {
-        ListaNotas.Add(new Nota { Titulo = "Nueva Nota", Contenido = "" });
-    }
-
 }
-

@@ -1,17 +1,16 @@
 ﻿
+
 using SQLite;
 
 namespace GestorNotas.Models
 {
-    public class Nota
+    public class Notas
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-
-        public string Titulo { get; set; }
-        public string Contenido { get; set; }
-
-        public override string ToString() => $"{Titulo} - {Contenido}";
+        [NotNull]
+        public string? Titulo { get; set; }
+        public string? Contenido { get; set; }
     }
 }
 

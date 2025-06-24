@@ -1,43 +1,88 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:GestorNotas.ViewModels"
-             x:Class="GestorNotas.Views.MainView"
-             Title="Gestor de Notas">
+<ContentPage
+    x:Class="GestorNotas.Views.MainView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:GestorNotas.Models"
+    xmlns:viewModel="clr-namespace:GestorNotas.ViewModels"
+    Title=""
+    x:DataType="viewModel:MainViewModel">
 
-    <ContentPage.BindingContext>
-        <vm:NotaViewModel />
-    </ContentPage.BindingContext>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="10">
-            <Entry Placeholder="Título" Text="{Binding Titulo}" />
-            <Editor Placeholder="Contenido" HeightRequest="100" Text="{Binding Contenido}" />
 
-            <HorizontalStackLayout Spacing="10">
-                <Button Text="Agregar" Command="{Binding AgregarCommand}" />
-                <Button Text="Editar" Command="{Binding EditarCommand}" />
-                <Button Text="Eliminar" Command="{Binding EliminarCommand}" />
-                <Button Text="Compartir" Command="{Binding CompartirCommand}" />
-            </HorizontalStackLayout>
+    <VerticalStackLayout Padding="10" Spacing="10">
 
-            <Entry Placeholder="Buscar..." Text="{Binding TextoBusqueda}" />
-            <Button Text="Buscar" Command="{Binding BuscarCommand}" />
+        <Label
+            FontAttributes="Bold"
+            FontSize="30"
+            HorizontalTextAlignment="Center"
+            Text="GESTOR DE NOTAS"
+            TextColor="Navy" />
 
-            <CollectionView ItemsSource="{Binding ListaNotas}"
-                            SelectionMode="Single"
-                            SelectedItem="{Binding NotaSeleccionada}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Padding="10" Margin="5" BorderColor="Gray">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding Titulo}" FontAttributes="Bold" />
-                                <Label Text="{Binding Contenido}" FontSize="Small" />
-                            </VerticalStackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </VerticalStackLayout>
-    </ScrollView>
+        <SearchBar HorizontalOptions="Start" Placeholder="Buscar..." 
+                   Text="{Binding SearchText}"/>
+
+        <Button
+            Command="{Binding GoToAddEditViewCommand}"
+            HorizontalOptions="End"
+            Text="Añadir +" />
+
+        <Border
+            Padding="10"
+            Background="NavajoWhite"
+            Stroke="LightGray"
+            StrokeShape="RoundRectangle 5"
+            StrokeThickness="1">
+            <Grid
+                Margin="5"
+                ColumnDefinitions="*,*"
+                RowDefinitions="Auto">
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontAttributes="Bold"
+                    HorizontalTextAlignment="Start"
+                    Text="Titulo" />
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    FontAttributes="Bold"
+                    HorizontalTextAlignment="Start"
+                    Text="Contenido" />
+            </Grid>
+        </Border>
+        <CollectionView ItemsSource="{Binding NotasCollection}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:Notas">
+                    <Border
+                        Margin="0,0,0,0"
+                        Padding="10"
+                        Stroke="LightGray"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1">
+                        <Grid
+                            ColumnDefinitions="*,*,*"
+                            RowDefinitions="Auto"
+                            RowSpacing="0">
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                HorizontalTextAlignment="Start"
+                                Text="{Binding Titulo}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                HorizontalOptions="Fill"
+                                HorizontalTextAlignment="Start"
+                                Text="{Binding Contenido}" />
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:MainViewModel}}, Path=SelectNotasCommand}" CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
 </ContentPage>
